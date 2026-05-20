@@ -39,5 +39,71 @@ namespace Warehouse.Application.Services
 
             return productDtos;
         }
+        public async Task<ProductResponse?> GetProductByIdAsync(Guid id)
+        {
+            var product = await _unitOfWork.GetGenericRepository<Product>().GetByIdAsync(id);
+            if (product == null) return null;
+
+            return new ProductResponse
+            {
+                Id = product.Id,
+                Sku = product.Sku,
+                Name = product.Name,
+                QuantityInStock = product.QuantityInStock,
+                Price = product.Price,
+                CategoryId = product.CategoryId
+            };
+        }
+        public async Task<ProductResponse> CreateProductAsync(ProductRequest request)
+        {
+            var category = await _unitOfWork.GetGenericRepository<Category>().GetByIdAsync(request.CategoryId);
+            if (category == null) throw new Exception("Category not found");
+
+            var newProduct = new Product
+            {
+                Id = Guid.NewGuid(),
+                Sku = request.SKU,
+                Name = request.name,
+                Price = request.price,
+                QuantityInStock = 0, // Mặc định khi tạo mới sẽ là 0
+                CategoryId = request.CategoryId
+            };
+            await _unitOfWork.GetGenericRepository<Product>().AddAsync(newProduct);
+            await _unitOfWork.SaveChangesAsync();
+
+            return new ProductResponse
+            {
+                Id = newProduct.Id,
+                Sku = newProduct.Sku,
+                Name = newProduct.Name,
+                Price = newProduct.Price,
+                QuantityInStock = newProduct.QuantityInStock,
+                CategoryId = newProduct.CategoryId
+            };
+        }
+        public async Task<bool> UpdateProductAsync(Guid id, ProductRequest request)
+        {
+            var productRepo = _unitOfWork.GetGenericRepository<Product>();
+            var Product = await productRepo.GetByIdAsync(id);
+            var existCategory = await _unitOfWork.GetGenericRepository<Category>().GetByIdAsync(request.CategoryId);
+            if (Product == null || existCategory == null) return false;
+
+            Product.Name = request.name;
+            Product.Sku = request.SKU;
+            Product.Price = request.price;
+            Product.CategoryId = request.CategoryId;
+
+            productRepo.Update(Product);
+            var result = await _unitOfWork.SaveChangesAsync();
+            return result > 0;
+        }
+        public async Task<bool> DeleteProductAsync(Guid id)
+        {
+            var productRepo = _unitOfWork.GetGenericRepository<Product>();
+            var Product = await productRepo.GetByIdAsync(id);
+
+        //chưa triển khai
+            return true;
+        }
     }
 }
