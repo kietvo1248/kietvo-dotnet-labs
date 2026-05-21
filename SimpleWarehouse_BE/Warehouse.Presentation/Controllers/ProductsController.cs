@@ -48,7 +48,7 @@ namespace Warehouse.Presentation.Controllers
             return CreatedAtAction(nameof(GetProductById), new { id = result.Id }, result);
         }
         [HttpPut("{id:guid}")]
-        [HasRole("Manager", "Admin")]
+        [HasRole("Staff", "Admin")]
         public async Task<IActionResult> UpdateProduct(Guid id, [FromBody] ProductRequest request)
         {
             var success = await _productService.UpdateProductAsync(id, request);
@@ -61,14 +61,27 @@ namespace Warehouse.Presentation.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        [HttpDelete("{id:guid}")]
-        [HasRole("Admin")]
-        public async Task<IActionResult> DeleteProduct(Guid id)
+        [HttpDelete("soft-delete/{id:guid}")]
+        [HasRole("Staff", "Admin")]
+        public async Task<IActionResult> SoftDeleteProduct(Guid id)
         {
-            var success = await _productService.DeleteProductAsync(id);
-            if (!success) return NotFound("Không tìm thấy sản phẩm cần xóa.");
+            var status = await _productService.SoftDeleteProductAsync(id);
 
-            return Ok("Xóa sản phẩm thành công.");
+            if (status == -1)
+                return NotFound("Không tìm thấy sản phẩm yêu cầu hoặc sản phẩm đã bị xóa trước đó.");
+
+            if (status == -2)
+            {
+                return BadRequest(new
+                {
+                    message = "Thao tác bị từ chối! Không thể xóa sản phẩm này vì vẫn còn hàng tồn trong kho (Quantity > 0). Vui lòng thực hiện xuất kho hết trước khi xóa!"
+                });
+            }
+
+            if (status == -3)
+                return StatusCode(500, "Có lỗi xảy ra trong quá trình lưu cập nhật vào hệ sinh thái.");
+
+            return Ok("Xóa sản phẩm thành công (Hệ thống đã chuyển trạng thái sang lưu trữ ẩn).");
         }
     }
 }

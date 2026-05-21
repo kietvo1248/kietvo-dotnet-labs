@@ -13,6 +13,7 @@ namespace Warehouse.Domain.Entities
         public string Name { get; set; } = string.Empty;
         public int QuantityInStock { get; set; }
         public decimal Price { get; set; }
+        public bool IsDeleted { get; set; } = false;
         public Guid CategoryId { get; set; }
 
         // Quan hệ Nhiều - 1: Sản phẩm thuộc về một danh mục

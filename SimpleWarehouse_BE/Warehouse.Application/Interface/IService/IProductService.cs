@@ -14,6 +14,6 @@ namespace Warehouse.Application.Interface.IService
         //Task<ProductResponse?> GetProductByNameAsync(ProductRequest request);
         Task<ProductResponse> CreateProductAsync(ProductRequest request);
         Task<bool> UpdateProductAsync(Guid id, ProductRequest request);
-        Task<bool> DeleteProductAsync(Guid id);
+        Task<int> SoftDeleteProductAsync(Guid id);
     }
 }
