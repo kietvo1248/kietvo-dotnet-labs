@@ -19,6 +19,6 @@ namespace Warehouse.Domain.Entities
         public virtual Product Product { get; set; } = null!;
 
         // Quan hệ Nhiều - 1: Giao dịch được thực hiện bởi một Người dùng cụ thể
-        public virtual User User { get; set; } = null!;
+        public virtual User? User { get; set; }
     }
 }
